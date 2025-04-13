@@ -1,6 +1,5 @@
 
-import { Helmet } from "react-helmet";
-import { lov-add-dependency>react-helmet@latest</lov-add-dependency>
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import MapView from "@/components/MapView";
 import ShipList from "@/components/ShipList";
