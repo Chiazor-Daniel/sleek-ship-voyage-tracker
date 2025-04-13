@@ -3,51 +3,52 @@ import { useRef, useState } from "react";
 import { Compass, Maximize2, Minimize2, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { useToast } from "@/hooks/use-toast";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix for default marker icons in Leaflet
+// This is needed because Leaflet's default markers rely on image files that aren't properly bundled
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
+
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
+// Custom marker icons for different ship types
+const shipIcons = {
+  cargo: L.divIcon({
+    className: "custom-div-icon",
+    html: `<div style="background-color: #38bdf8; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white;"></div>`,
+    iconSize: [10, 10],
+    iconAnchor: [5, 5],
+  }),
+  tanker: L.divIcon({
+    className: "custom-div-icon",
+    html: `<div style="background-color: #fb923c; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white;"></div>`,
+    iconSize: [10, 10],
+    iconAnchor: [5, 5],
+  }),
+  passenger: L.divIcon({
+    className: "custom-div-icon",
+    html: `<div style="background-color: #4ade80; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white;"></div>`,
+    iconSize: [10, 10],
+    iconAnchor: [5, 5],
+  }),
+};
 
 // Default center position (middle of the ocean)
 const defaultCenter = {
   lat: 25.0,
   lng: -40.0
-};
-
-// Map container style
-const containerStyle = {
-  width: '100%',
-  height: '100%',
-  borderRadius: 'inherit'
-};
-
-// Map component options
-const options = {
-  disableDefaultUI: true,
-  zoomControl: false,
-  styles: [
-    {
-      featureType: "water",
-      elementType: "geometry",
-      stylers: [
-        { color: "#e9e9e9" },
-        { lightness: 17 }
-      ]
-    },
-    {
-      featureType: "landscape",
-      elementType: "geometry",
-      stylers: [
-        { color: "#f5f5f5" },
-        { lightness: 20 }
-      ]
-    },
-    {
-      featureType: "road",
-      elementType: "geometry",
-      stylers: [
-        { visibility: "off" }
-      ]
-    },
-  ]
 };
 
 interface ShipMarker {
@@ -58,13 +59,9 @@ interface ShipMarker {
 }
 
 const MapView = () => {
-  const mapRef = useRef<google.maps.Map | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [selectedShip, setSelectedShip] = useState<ShipMarker | null>(null);
   const { toast } = useToast();
-  
-  // Using the provided API key directly
-  const googleMapsApiKey = "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao";
   
   // Simulate ships data
   const ships: ShipMarker[] = [
@@ -74,35 +71,32 @@ const MapView = () => {
     { id: 4, name: "Meridian", position: { lat: 40.4168, lng: -73.7781 }, type: "cargo" },
   ];
 
-  // Load Google Maps API
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey,
-    libraries: ["places"]
-  });
-
   // Toggle fullscreen mode
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
+    // We need to invalidate the map size when toggling fullscreen
+    setTimeout(() => {
+      mapRef.current?.invalidateSize();
+    }, 100);
   };
 
   // Zoom controls
   const handleZoomIn = () => {
     if (mapRef.current) {
-      mapRef.current.setZoom((mapRef.current.getZoom() || 3) + 1);
+      mapRef.current.zoomIn();
     }
   };
 
   const handleZoomOut = () => {
     if (mapRef.current) {
-      mapRef.current.setZoom((mapRef.current.getZoom() || 3) - 1);
+      mapRef.current.zoomOut();
     }
   };
 
   // Reset map to center
   const handleResetView = () => {
     if (mapRef.current) {
-      mapRef.current.setCenter(defaultCenter);
-      mapRef.current.setZoom(3);
+      mapRef.current.setView(defaultCenter, 3);
       toast({
         title: "Map Reset",
         description: "Map view has been reset to default",
@@ -110,40 +104,6 @@ const MapView = () => {
     }
   };
   
-  // Set map reference when the map loads
-  const onMapLoad = (map: google.maps.Map) => {
-    mapRef.current = map;
-  };
-  
-  // Handle marker click
-  const handleMarkerClick = (ship: ShipMarker) => {
-    setSelectedShip(ship);
-  };
-  
-  // Show loading state or error
-  if (loadError) {
-    return (
-      <div className="flex items-center justify-center w-full h-full bg-muted/20 rounded-lg">
-        <div className="text-center p-6">
-          <p className="text-lg font-medium text-red-500">Error loading Google Maps</p>
-          <p className="mt-2 text-sm text-muted-foreground">There was a problem loading the map</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center w-full h-full bg-muted/20 rounded-lg">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-12 rounded-full bg-primary/20 mb-4"></div>
-          <div className="h-4 w-24 bg-muted rounded"></div>
-          <p className="mt-4 text-sm text-muted-foreground">Loading map...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 p-4' : 'w-full h-[500px] md:h-[600px]'}`}>
       <Card className={`w-full h-full overflow-hidden ${isFullscreen ? 'rounded-lg' : ''}`}>
@@ -166,43 +126,34 @@ const MapView = () => {
         </div>
 
         <div className="w-full h-full">
-          <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={defaultCenter}
-            zoom={3}
-            options={options}
-            onLoad={onMapLoad}
+          <MapContainer 
+            center={defaultCenter} 
+            zoom={3} 
+            style={{ width: "100%", height: "100%", borderRadius: "inherit" }}
+            zoomControl={false}
+            ref={mapRef}
           >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            
             {/* Ship markers */}
             {ships.map((ship) => (
               <Marker
                 key={ship.id}
-                position={ship.position}
-                icon={{
-                  path: "M -1,-1 1,-1 1,1 -1,1 z",
-                  fillColor: ship.type === "cargo" ? "#38bdf8" : ship.type === "tanker" ? "#fb923c" : "#4ade80",
-                  fillOpacity: 1,
-                  scale: 4,
-                  strokeWeight: 1,
-                  strokeColor: "#ffffff"
-                }}
-                onClick={() => handleMarkerClick(ship)}
-              />
-            ))}
-            
-            {/* Info window for selected ship */}
-            {selectedShip && (
-              <InfoWindow
-                position={selectedShip.position}
-                onCloseClick={() => setSelectedShip(null)}
+                position={[ship.position.lat, ship.position.lng]}
+                icon={shipIcons[ship.type]}
               >
-                <div className="p-1">
-                  <p className="font-medium text-gray-900">{selectedShip.name}</p>
-                  <p className="text-xs text-gray-600">Type: {selectedShip.type}</p>
-                </div>
-              </InfoWindow>
-            )}
-          </GoogleMap>
+                <Popup>
+                  <div className="p-1">
+                    <p className="font-medium text-gray-900">{ship.name}</p>
+                    <p className="text-xs text-gray-600">Type: {ship.type}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
         </div>
 
         {/* Legend */}
