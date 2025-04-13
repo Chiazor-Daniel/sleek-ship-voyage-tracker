@@ -63,8 +63,9 @@ const MapView = () => {
   const [selectedShip, setSelectedShip] = useState<ShipMarker | null>(null);
   const { toast } = useToast();
   
-  // Configure API key input if you don't have one in environment variables
-  const [apiKey, setApiKey] = useState<string>(process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "");
+  // We'll use a state variable for the API key instead of process.env
+  // This would be a place to use an environment variable in a production app
+  const [apiKey, setApiKey] = useState<string>("");
   
   // Simulate ships data
   const ships: ShipMarker[] = [
