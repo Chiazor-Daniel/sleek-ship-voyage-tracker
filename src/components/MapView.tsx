@@ -63,9 +63,8 @@ const MapView = () => {
   const [selectedShip, setSelectedShip] = useState<ShipMarker | null>(null);
   const { toast } = useToast();
   
-  // We'll use a state variable for the API key instead of process.env
-  // This would be a place to use an environment variable in a production app
-  const [apiKey, setApiKey] = useState<string>("");
+  // Using the provided API key directly
+  const googleMapsApiKey = "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao";
   
   // Simulate ships data
   const ships: ShipMarker[] = [
@@ -77,7 +76,8 @@ const MapView = () => {
 
   // Load Google Maps API
   const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: apiKey,
+    googleMapsApiKey,
+    libraries: ["places"]
   });
 
   // Toggle fullscreen mode
@@ -126,24 +126,7 @@ const MapView = () => {
       <div className="flex items-center justify-center w-full h-full bg-muted/20 rounded-lg">
         <div className="text-center p-6">
           <p className="text-lg font-medium text-red-500">Error loading Google Maps</p>
-          <p className="mt-2 text-sm text-muted-foreground">Please check your API key and try again</p>
-          
-          <div className="mt-4 max-w-md mx-auto">
-            <label className="block text-sm font-medium mb-1">Google Maps API Key</label>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                value={apiKey} 
-                onChange={(e) => setApiKey(e.target.value)}
-                className="flex-1 px-3 py-2 border border-border rounded-md text-sm"
-                placeholder="Enter your API key"
-              />
-              <Button onClick={() => window.location.reload()}>Apply</Button>
-            </div>
-            <p className="text-xs mt-1 text-muted-foreground">
-              Get an API key from the <a href="https://console.cloud.google.com/google/maps-apis/" target="_blank" rel="noreferrer" className="underline">Google Cloud Console</a>
-            </p>
-          </div>
+          <p className="mt-2 text-sm text-muted-foreground">There was a problem loading the map</p>
         </div>
       </div>
     );
