@@ -30,7 +30,7 @@ const dummyProducts = [
     ship: "MV Nordic Star",
     status: "Loading",
     eta: "April 25, 2025",
-    image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=500&auto=format",
+    image: "https://images.unsplash.com/photo-1567538096621-38d2284b23ff?w=500&auto=format",
     coordinates: { lat: 57.7089, lng: 11.9746 }
   },
   {
@@ -164,7 +164,7 @@ const ProductTracking = () => {
                       </div>
                     </div>
                     
-                    <div className="h-64 bg-muted rounded-lg overflow-hidden">
+                    <div className="h-64">
                       <MapView />
                     </div>
                   </div>
