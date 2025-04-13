@@ -1,9 +1,12 @@
 
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import MapView from "@/components/MapView";
 import ShipList from "@/components/ShipList";
 import DashboardStats from "@/components/DashboardStats";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 const Index = () => {
   return (
@@ -23,6 +26,15 @@ const Index = () => {
           </div>
 
           <DashboardStats />
+
+          <div className="my-6 flex justify-between items-center">
+            <h2 className="text-xl font-medium">Global Ship Map</h2>
+            <Link to="/products">
+              <Button variant="outline" size="sm" className="gap-1">
+                Track Products <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
 
           <div className="my-6">
             <MapView />
