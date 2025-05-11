@@ -269,7 +269,7 @@ const ProductTracking = () => {
                   <CardFooter>
                     <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-2">
                       <p className="text-sm text-muted-foreground">Expected arrival: {selectedProduct.eta}</p>
-                      <Button>View Detailed Report</Button>
+                      <Button>View Detailed Report.</Button>
                     </div>
                   </CardFooter>
                 </Card>
