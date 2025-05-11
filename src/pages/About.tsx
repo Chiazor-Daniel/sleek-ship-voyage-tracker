@@ -1,8 +1,7 @@
-
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Ship, Anchor, Globe, Shield } from "lucide-react";
+import { Ship, Anchor, Globe, Shield, MessageCircle, Mail } from "lucide-react";
 
 const About = () => {
   return (
@@ -16,6 +15,37 @@ const About = () => {
         <Navbar />
 
         <main className="flex-1 container px-4 pt-20 pb-6">
+          {/* Customer Support Banner - Prominently displayed at the top */}
+          <div className="bg-primary text-primary-foreground p-4 rounded-lg mb-8">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-6 w-6" />
+                <div>
+                  <h2 className="font-semibold text-lg">Need assistance? We're here to help!</h2>
+                  <p>Contact our customer support team via Telegram or Email</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-3 justify-center lg:justify-end">
+                <a 
+                  href="https://t.me/voyagershippingcustomersupport" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-primary-foreground text-primary px-4 py-2 rounded-md font-medium hover:bg-primary-foreground/90 transition-colors flex items-center gap-1"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  @voyagershippingcustomersupport
+                </a>
+                <a 
+                  href="mailto:Helpvogyagershipping@gmail.com" 
+                  className="bg-primary-foreground text-primary px-4 py-2 rounded-md font-medium hover:bg-primary-foreground/90 transition-colors flex items-center gap-1"
+                >
+                  <Mail className="h-4 w-4" />
+                  Email Support
+                </a>
+              </div>
+            </div>
+          </div>
+
           <div className="my-6">
             <h1 className="text-2xl font-semibold">About VoyageTrack</h1>
             <p className="text-muted-foreground">The next generation in ship tracking technology</p>
@@ -113,8 +143,25 @@ const About = () => {
         </main>
 
         <footer className="border-t border-border/50 py-4">
-          <div className="container px-4 text-center text-sm text-muted-foreground">
-            VoyageTrack © {new Date().getFullYear()} - Real-time vessel tracking and monitoring
+          <div className="container px-4 text-sm text-muted-foreground">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div>
+                VoyageTrack © {new Date().getFullYear()} - Real-time vessel tracking and monitoring
+              </div>
+              <div className="mt-2 md:mt-0 flex flex-wrap gap-4 items-center justify-center">
+                <span>Need help? Contact us:</span>
+                <div className="flex gap-4">
+                  <a href="mailto:Helpvogyagershipping@gmail.com" className="flex items-center gap-1 text-primary hover:underline">
+                    <Mail className="h-4 w-4" />
+                    Helpvogyagershipping@gmail.com
+                  </a>
+                  <a href="https://t.me/voyagershippingcustomersupport" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+                    <MessageCircle className="h-4 w-4" />
+                    @voyagershippingcustomersupport
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </footer>
       </div>

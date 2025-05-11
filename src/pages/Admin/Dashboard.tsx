@@ -2,51 +2,24 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { createProduct, updateProduct, deleteProduct, fetchProducts } from '@/services/supabase';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// Fix Leaflet marker icon issues
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png'
-});
-
-// Map click handler component
-const LocationPicker = ({ onLocationSelected, currentLocation }) => {
-  const map = useMapEvents({
-    click: (e) => {
-      const { lat, lng } = e.latlng;
-      onLocationSelected({ lat: lat.toFixed(6), lng: lng.toFixed(6) });
-    },
-  });
-
-  return currentLocation?.lat && currentLocation?.lng ? (
-    <Marker position={[currentLocation.lat, currentLocation.lng]}>
-      <Popup>Selected location</Popup>
-    </Marker>
-  ) : null;
-};
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [formData, setFormData] = useState({
-    id: '',
-    name: '',
-    origin: '',
-    destination: '',
-    ship: '',
-    status: '',
-    eta: '',
-    image: '',
-    coordinates: { lat: 0, lng: 0 }
-  });
-  const [mapMode, setMapMode] = useState('select'); // 'select' for direct selection
+const [formData, setFormData] = useState({
+  id: '',
+  name: '',
+  origin: '',
+  destination: '',
+  ship: '',
+  status: '',
+  eta: '',
+  image: '',
+  coordinates: { lat: '' }, // Only keep latitude for current location
+});
 
   useEffect(() => {
     // Check authentication
@@ -112,35 +85,21 @@ const Dashboard = () => {
     });
   };
 
-  const resetForm = () => {
-    setEditingProduct(null);
-    setFormData({
-      id: '',
-      name: '',
-      origin: '',
-      destination: '',
-      ship: '',
-      status: '',
-      eta: '',
-      image: '',
-      coordinates: { lat: 0, lng: 0 }
-    });
-  };
 
-  const handleCoordinateSelect = (coords) => {
-    setFormData({
-      ...formData,
-      coordinates: {
-        lat: parseFloat(coords.lat),
-        lng: parseFloat(coords.lng)
-      }
-    });
-  };
-
-  const defaultMapCenter = [0, 0];
-  const mapPosition = formData.coordinates.lat && formData.coordinates.lng 
-    ? [formData.coordinates.lat, formData.coordinates.lng] 
-    : defaultMapCenter;
+const resetForm = () => {
+  setEditingProduct(null);
+  setFormData({
+    id: '',
+    name: '',
+    origin: '',
+    destination: '',
+    ship: '',
+    status: '',
+    eta: '',
+    image: '',
+    coordinates: { lat: '' }, // Reset latitude as current location
+  });
+};
 
   return (
     <div className="container mx-auto px-4 py-8 bg-gray-900 text-white">
@@ -190,15 +149,15 @@ const Dashboard = () => {
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium mb-1">Destination</label>
-              <Input
-                type="text"
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Destination & Current location</label>
+              <Textarea
+              type='text'
                 value={formData.destination}
                 onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                 required
-                className="bg-gray-700 text-white"
-                placeholder="Enter destination location"
+                className="bg-gray-700 text-white min-h-24"
+                placeholder="Enter destination & current location: example_ 'New York, USA\nLos Angeles, USA'"
               />
             </div>
             
@@ -225,7 +184,7 @@ const Dashboard = () => {
                 placeholder="Enter shipment status"
               />
             </div>
-            
+                        
             <div>
               <label className="block text-sm font-medium mb-1">ETA</label>
               <Input
@@ -249,60 +208,8 @@ const Dashboard = () => {
                 placeholder="Enter image URL"
               />
             </div>
-          </div>
-
-          {/* Map Section */}
-          <div className="mt-6">
-            <h3 className="text-lg font-medium mb-2">Set Coordinates</h3>
-            <p className="text-sm text-gray-400 mb-4">Click on the map to set coordinates or manually enter values below</p>
-
-            {/* Map Display */}
-            <div className="rounded-lg overflow-hidden h-64 mb-4">
-              <MapContainer
-                center={mapPosition}
-                zoom={2}
-                style={{ height: '100%', width: '100%' }}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <LocationPicker 
-                  onLocationSelected={handleCoordinateSelect}
-                  currentLocation={formData.coordinates}
-                />
-              </MapContainer>
-            </div>
-
-            {/* Coordinate Inputs */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Latitude</label>
-                <Input
-                  type="number"
-                  value={formData.coordinates.lat}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    coordinates: { ...formData.coordinates, lat: parseFloat(e.target.value) }
-                  })}
-                  className="bg-gray-700 text-white"
-                  placeholder="Enter latitude"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Longitude</label>
-                <Input
-                  type="number"
-                  value={formData.coordinates.lng}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    coordinates: { ...formData.coordinates, lng: parseFloat(e.target.value) }
-                  })}
-                  className="bg-gray-700 text-white"
-                  placeholder="Enter longitude"
-                />
-              </div>
-            </div>
+  
+ 
           </div>
 
           <div className="mt-4 flex space-x-2">
@@ -340,7 +247,7 @@ const Dashboard = () => {
                 <tr key={product.id}>
                   <td className="px-6 py-4 whitespace-nowrap">{product.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.origin} → {product.destination}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.origin} → {product.destination.split('\n')[0]}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.status}</td>
                   <td className="px-6 py-4 whitespace-nowrap space-x-2">
                     <Button
