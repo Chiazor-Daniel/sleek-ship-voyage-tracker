@@ -5,49 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, Truck, Ship, MapPin, Navigation, MapPinOff } from "lucide-react";
+import { Package, Truck, Ship, MapPin, Navigation } from "lucide-react";
 import { Badge } from "@/components/ui/badge"
 import { fetchProducts } from "@/services/supabase";
-
-// Fallback dummy data to use if Supabase fetch fails
-const dummyProducts = [
-  {
-    id: "PRD001",
-    name: "Premium Coffee Beans",
-    origin: "Colombia",
-    destination: "New York",
-    ship: "SS Maritime Explorer",
-    status: "In Transit",
-    eta: "April 20, 2025",
-    image: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=500&auto=format",
-    location: "Atlantic Ocean, 200 miles east of Miami",
-    coordinates: { lat: 25.7617, lng: -80.1918 }
-  },
-  {
-    id: "PRD002",
-    name: "Scandinavian Furniture",
-    origin: "Sweden",
-    destination: "Los Angeles",
-    ship: "MV Nordic Star",
-    status: "Loading",
-    eta: "April 25, 2025",
-    image: "https://images.unsplash.com/photo-1567538096621-38d2284b23ff?w=500&auto=format",
-    location: "Port of Gothenburg, Sweden",
-    coordinates: { lat: 57.7089, lng: 11.9746 }
-  },
-  {
-    id: "PRD003",
-    name: "Organic Tea Collection",
-    origin: "India",
-    destination: "London",
-    ship: "SS Ocean Voyager",
-    status: "Departed",
-    eta: "April 18, 2025",
-    image: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=500&auto=format",
-    location: "Arabian Sea, approaching the Gulf of Aden",
-    coordinates: { lat: 14.5682, lng: 53.1471 }
-  },
-];
 
 const ProductTracking = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,15 +27,14 @@ const ProductTracking = () => {
           setProducts(response.data);
           setSelectedProduct(response.data[0]);
         } else {
-          console.warn("No products found in database, using dummy data");
-          setProducts(dummyProducts);
-          setSelectedProduct(dummyProducts[0]);
+          console.warn("No products found in database");
+          setProducts([]);
+          setError("No products found in database");
         }
       } catch (err) {
         console.error('Error fetching products:', err);
-        setError("Failed to fetch products. Using demo data instead.");
-        setProducts(dummyProducts);
-        setSelectedProduct(dummyProducts[0]);
+        setError("Failed to fetch products. Please try again later.");
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -84,7 +43,7 @@ const ProductTracking = () => {
     fetchData();
   }, []);
 
-  // Make sure we always have a selected product
+  // Make sure we always have a selected product if products exist
   useEffect(() => {
     if (products.length > 0 && !selectedProduct) {
       setSelectedProduct(products[0]);
@@ -185,7 +144,7 @@ const ProductTracking = () => {
               </Card>
             </div>
 
-            {selectedProduct && (
+            {selectedProduct ? (
               <div className="lg:col-span-2">
                 <Card className="mb-6">
                   <CardHeader>
@@ -246,17 +205,14 @@ const ProductTracking = () => {
                           </h3>
                           
                           <div className="flex-1 flex flex-col justify-center items-center text-center">
-                          <div className="flex items-center gap-2 text-3xl font-bold mb-2">
-  <span className="w-3 h-3 bg-green-500 rounded-full"></span> {/* Green dot */}
-  {selectedProduct.status}
-</div>
+                            <div className="flex items-center gap-2 text-3xl font-bold mb-2">
+                              <span className="w-3 h-3 bg-green-500 rounded-full"></span> {/* Green dot */}
+                              {selectedProduct.status}
+                            </div>
                             <br />
                             <p className="text-lg mb-2">
-                              {selectedProduct.destination || "Location information not available"}
+                              {selectedProduct.location || selectedProduct.destination || "Location information not available"}
                             </p>
-                            
-                            {/* Display coordinates with longitude emphasized */}
-                         
                             
                             <div className="text-sm text-muted-foreground">
                               Last updated: {new Date().toLocaleDateString()}
@@ -269,9 +225,23 @@ const ProductTracking = () => {
                   <CardFooter>
                     <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-2">
                       <p className="text-sm text-muted-foreground">Expected arrival: {selectedProduct.eta}</p>
-                      <Button>View Detailed Report.</Button>
+                      <Button>View Detailed Report</Button>
                     </div>
                   </CardFooter>
+                </Card>
+              </div>
+            ) : (
+              <div className="lg:col-span-2">
+                <Card className="flex items-center justify-center p-8 h-full">
+                  <div className="text-center">
+                    <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-medium mb-2">No Product Selected</h3>
+                    <p className="text-muted-foreground">
+                      {products.length > 0 
+                        ? "Select a product from the list to view its details" 
+                        : "No products available in the system"}
+                    </p>
+                  </div>
                 </Card>
               </div>
             )}

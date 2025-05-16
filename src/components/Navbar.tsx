@@ -1,35 +1,41 @@
 import { useState } from "react";
-import { Bell, Menu, Search, Ship, Moon, Sun, MapPin } from "lucide-react";
+import { Bell, Menu, Search, Ship, MapPin, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const [isLiveTracking, setIsLiveTracking] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
   return (
     <header className="w-full border-b border-border/50 backdrop-blur-sm bg-background/80 fixed top-0 z-40">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(true)}
+          >
             <Menu className="h-5 w-5" />
           </Button>
-          <Link to="/" className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2">
             <Ship className="h-6 w-6 text-primary" />
             <span className="text-lg font-semibold">VoyageTrack</span>
-          </Link>
+          </a>
         </div>
 
         <div className="hidden md:flex items-center gap-6">
-          <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+          <a href="/" className="text-sm font-medium hover:text-primary transition-colors">
             Dashboard
-          </Link>
-          <Link to="/products" className="text-sm font-medium hover:text-primary transition-colors">
+          </a>
+          <a href="/products" className="text-sm font-medium hover:text-primary transition-colors">
             Products
-          </Link>
-          <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
+          </a>
+          <a href="/about" className="text-sm font-medium hover:text-primary transition-colors">
             About
-          </Link>
+          </a>
         </div>
 
         <div className="hidden md:flex items-center relative max-w-sm w-full">
@@ -43,14 +49,18 @@ const Navbar = () => {
         
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="ghost" size="icon">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => {}}
+          >
             <Bell className="h-5 w-5" />
           </Button>
           <Button
+            variant={isLiveTracking ? "default" : "outline"}
             size="sm"
             className="hidden md:inline-flex"
             onClick={() => setIsLiveTracking(!isLiveTracking)}
-            variant={isLiveTracking ? "default" : "outline"}
           >
             {isLiveTracking ? (
               <>
@@ -66,6 +76,28 @@ const Navbar = () => {
           </Button>
         </div>
       </div>
+
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex">
+          <div className="bg-background w-64 h-full p-6">
+            <Button
+              variant="ghost" 
+              size="icon" 
+              className="mb-4"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <nav className="flex flex-col gap-4">
+              <a href="/" onClick={() => setMobileMenuOpen(false)}>Dashboard</a>
+              <a href="/products" onClick={() => setMobileMenuOpen(false)}>Products</a>
+              <a href="/about" onClick={() => setMobileMenuOpen(false)}>About</a>
+            </nav>
+          </div>
+          <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
+        </div>
+      )}
     </header>
   );
 };
